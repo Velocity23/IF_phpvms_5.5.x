@@ -29,8 +29,6 @@ class Registration extends CodonModule
 
 	public function index()
 	{
-                //updated to Google noCaptcha 1/15
-		require_once CORE_LIB_PATH.'/recaptcha/recaptchalib.php';
 
 		if(Auth::LoggedIn()) { // Make sure they don't over-ride it
 			$this->render('login_already.tpl');
@@ -47,9 +45,6 @@ class Registration extends CodonModule
 
 	protected function ShowForm()
 	{
-                //Google reCaptcha
-                //updated to Google noCaptcha 1/15
-                $this->set('sitekey', RECAPTCHA_PUBLIC_KEY);
                 $this->set('lang', 'en');
 
 		$field_list = RegistrationData::GetCustomFields();
@@ -171,25 +166,6 @@ class Registration extends CodonModule
 	protected function VerifyData()
 	{
 		$error = false;
-
-                //Google reCaptcha
-                //updated to Google noCaptcha 1/15
-                $resp = null;
-                $reCaptcha = new ReCaptcha(RECAPTCHA_PRIVATE_KEY);
-                // Was there a reCAPTCHA response?
-                if ($_POST["g-recaptcha-response"]) {
-                        $resp = $reCaptcha->verifyResponse(
-                        $_SERVER["REMOTE_ADDR"],
-                        $_POST["g-recaptcha-response"]
-                    );
-                }
-
-                //check if reCaptcha response was valid
-                if ($resp == null) {
-                     $error = true;
-                     $this->set('captcha_error', 'reCaptcha Validation Error');
-                }
-                //end Google reCaptcha
 
 		/* Check the firstname and last name
 		 */
