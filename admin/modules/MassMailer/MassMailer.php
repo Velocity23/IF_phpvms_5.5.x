@@ -75,17 +75,12 @@ class MassMailer extends CodonModule {
 
 		# Do some quick fixing of obvious formatting errors
 		$message = str_replace('<br>', '<br />', $message);
-		foreach ($pilotarray as $pilot) {
-			echo 'Sending for ' . $pilot->firstname . ' ' . $pilot->lastname . '<br />';
-
-			# Variable replacements
-			$send_message = str_replace('{PILOT_FNAME}', $pilot->firstname, $message);
-			$send_message = str_replace('{PILOT_LNAME}', $pilot->lastname, $send_message);
-			$send_message = str_replace('{PILOT_ID}', PilotData::GetPilotCode($pilot->code, $pilot->pilotid), $send_message);
-			$send_message = utf8_encode($send_message);
-
-			Util::SendEmail($pilot->email, $subject, $send_message);
+		//$pilotarray
+		$emailarray = array();
+		foreach ($pilotarray as $item) {
+			array_push($emailarray, $item->email);
 		}
+		Util::SendEmail($emailarray, $subject, $message);
 
 		echo 'Complete!';
 
