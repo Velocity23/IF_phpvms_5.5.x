@@ -233,8 +233,13 @@ class Util
 	{
 		ob_start();
 		# PHPMailer
-		include_once(SITE_ROOT.'/core/lib/phpmailer/class.phpmailer.php');
-		$mail = new PHPMailer();
+		/*use PHPMailer\PHPMailer\PHPMailer;
+		use PHPMailer\PHPMailer\Exception;*/
+
+		require_once SITE_ROOT.'/core/lib/phpmailer/src/Exception.php';
+		require_once SITE_ROOT.'/core/lib/phpmailer/src/PHPMailer.php';
+		require_once SITE_ROOT.'/core/lib/phpmailer/src/SMTP.php';
+		$mail = new PHPMailer\PHPMailer\PHPMailer();	
 
 		if($fromemail == '') {
 			$fromemail = Config::Get('EMAIL_FROM_ADDRESS');
@@ -258,50 +263,42 @@ class Util
 			$return_path_email = $fromemail;
 		}
 
-		$mail->From     = $fromemail;
-		$mail->FromName = $fromname;
+		$mail->setFrom($fromemail, $fromname);
 
-		// Fix thanks to jm (Jean-Michel)
-		$mail->Sender = $return_path_email;
-
-		$mail->Mailer = 'mail';
-		$mail->CharSet = 'UTF-8'; #always use UTF-8
-		$mail->IsHTML(true);
+		$mail->isHTML(true);
 
 		if(Config::Get('EMAIL_USE_SMTP') == true) {
 
-			$mail->IsSMTP();
+			$mail->isSMTP();
 
 			$mail->Host = Config::Get('EMAIL_SMTP_SERVERS');
 			$mail->Port = Config::Get('EMAIL_SMTP_PORT');
 
 			if(Config::Get('EMAIL_SMTP_USE_AUTH') == true) {
                 $mail->SMTPAuth = true;
-                $mail->SMTPSecure = Config::get('EMAIL_SMTP_SECURE');
+                $mail->SMTPSecure = Config::Get('EMAIL_SMTP_SECURE');
 				$mail->Username = Config::Get('EMAIL_SMTP_USER');
 				$mail->Password = Config::Get('EMAIL_SMTP_PASS');
 			}
 		}
 
-		$mail->SetFrom($fromemail, $fromname);
 		$mail->AddReplyTo($fromemail, $fromname);
 
 		$message = "<html><head></head><body>{$message}</body></html>";
-		//$message = nl2br($message);
 		$alt = strip_tags($message);
 
                 //allowing function to send to an array of email addresses, not just one
 		if(is_array($email))    {
-                    foreach($email as $emailrec)    {
-                        $mail->AddAddress($emailrec);
+			$mail->addAddress($fromemail, 'Undisclosed Recipients');		
+			foreach($email as $emailrec)    {
+                        $mail->addBCC($emailrec);
                     }
                 }
                 else    {
-                    $mail->AddAddress($email);
+                    $mail->addAddress($email);
                 }
 		$mail->Subject = $subject;
 		$mail->Body = $message;
-		$mail->AltBody = $alt;
 
 		$mail->Send();
 		ob_end_clean();
